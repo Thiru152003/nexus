@@ -13,17 +13,20 @@ spec:
       labels:
         app: nexus
     spec:
+      securityContext:
+        fsGroup: 200  # Ensures the volume has the correct group permissions
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 200:200 /nexus-data"]
+          volumeMounts:
+            - name: nexus-storage
+              mountPath: /nexus-data
       containers:
         - name: nexus
-         securityContext:
-        runAsUser: 200
-        fsGroup: 200
           image: sonatype/nexus3:latest
           ports:
             - containerPort: 8081
-          envFrom:
-            - configMapRef:
-                name: nexus-config
           volumeMounts:
             - name: nexus-storage
               mountPath: /nexus-data
